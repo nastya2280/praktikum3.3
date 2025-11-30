@@ -1,0 +1,86 @@
+import pygame
+import json
+import random
+import sys
+
+def load_config(path="config.json"):
+    try:
+        with open(path, "r") as f:
+            return json.load(f)
+    except Exception as e:
+        print("Ошибка загрузки config.json:", e)
+        sys.exit()
+
+config = load_config()
+pygame.init()
+screen = pygame.display.set_mode((config["window_width"], config["window_height"]))
+pygame.display.set_caption("Змейка")
+
+class Snake:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.direction = (1, 0)
+        self.body = [(x, y)]
+
+    def set_direction(self, d):
+        """ Задаем направление движения (x, y)"""
+        if d[0] == -self.direction[0] and d[1] == -self.direction[1]:
+            return
+        self.direction = d
+
+    def move(self, flag):
+        """ Обновляем список позиций """
+        head_x, head_y = self.body[-1]
+        new_head = (head_x + self.direction[0], head_y + self.direction[1])
+        self.body.append(new_head)
+        if not flag:
+            self.body.pop(0)
+
+    def check_collision(self):
+        """ Флаг не врезалась ли змейка в себя """
+        head = self.body[-1]
+        return head in self.body[:-1]
+
+
+class Food:
+    def __init__(self, snake):
+        self.position = None
+        self.respawn(snake)
+
+    def random_position(self):
+        """ Задаем рандомные позиции """
+        x = random.randint(0, config["window_width"] - 1)
+        y = random.randint(0, config["window_height"] - 1)
+        return (x, y)
+
+    def respawn(self, snake):
+        """ Респавн, если координаты заняты """
+        while True:
+            pos = self.random_position()
+            if pos not in snake.body:
+                self.position = pos
+                break
+
+class Game:
+    def __init__(self):
+        self.running = True
+        self.screen = screen
+        self.bg_color = config["background_color"]
+        self.snake = Snake(10, 20)
+        self.food = Food(self.snake)
+
+    def update(self):
+        # сбрасываем флаг роста длины
+        self.snake.move(self.flag)
+        self.flag = False
+
+        # если змейка съела еду, прибавляем длину и респавним еду
+        if self.snake.body[-1] == self.food.position:
+            self.flag = True
+            self.food.respawn(self.snake)
+
+        #если змейка врезалась в себя, останавливаем игру
+        if self.snake.check_collision():
+            self.running = False
+
