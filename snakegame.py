@@ -20,7 +20,7 @@ screen = pygame.display.set_mode((config["window_width"], config["window_height"
 pygame.display.set_caption("Змейка")  # название окна
 clock = pygame.time.Clock()  # таймер для кадров
 
-CELL_SIZE = 20  # размер клетки змейки
+CELL_SIZE = 30  # размер клетки змейки
 FONT = pygame.font.SysFont(None, 36)  # шрифт для текста
 SAVE_FILE = "highscore.txt"  # файл для рекордов
 
@@ -85,7 +85,7 @@ class Food:
                 break
 
     def draw(self, surface):
-        pygame.draw.rect(surface, (255, 0, 0),
+        pygame.draw.rect(surface, tuple(config["color_of_food"]),
                          (self.position[0]*CELL_SIZE, self.position[1]*CELL_SIZE, CELL_SIZE, CELL_SIZE))  # рисуем еду
 
 # основной класс игры
@@ -98,6 +98,7 @@ class Game:
         self.highscore = self.load_highscore()  # рекорд
         self.difficulty = "medium"  # по умолчанию средняя сложность
         self.speed = self.get_speed_by_difficulty(self.difficulty)  # скорость змейки
+        self.paused = False
 
     def get_speed_by_difficulty(self, level):
         # задаем скорость для каждой сложности
@@ -145,8 +146,11 @@ class Game:
                 elif event.key == pygame.K_3:
                     self.difficulty = "hard"
                     self.speed = self.get_speed_by_difficulty("hard")
-
+                elif event.key == pygame.K_SPACE:
+                    self.paused = not self.paused  # переключаем пауза/продолжить
     def update(self):
+        if self.paused:
+            return  # если пауза — не двигаем змейку, не обновляем игру
         self.snake.move()  # двигаем змейку
 
         # проверяем, съела ли змейка еду
