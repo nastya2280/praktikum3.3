@@ -2,5 +2,6 @@
   "window_width": 800,
   "window_height": 600,
   "fps": 60,
-  "background_color": [10, 10, 20]
+  "background_color": [10, 10, 20],
+  "color_of_food": [255, 255, 0]
 }
